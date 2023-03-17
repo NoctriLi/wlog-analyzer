@@ -2,6 +2,7 @@ import { ApolloClient, InMemoryCache, useQuery, gql } from "@apollo/client";
 import { useState, useEffect } from "react";
 import styles from "../styles/Home.module.css";
 import client from "../apollo-client";
+import { isPartiallyEmittedExpression } from "typescript";
 /*TODO: 
 create dict of encounterID
 create array of classes
@@ -83,27 +84,94 @@ const CQUERY = gql`
   }
 `;
 
-function getRankPercentRounded(rankPercent) {
+// Class that contains the various data relevant for a character
+class CharacterData 
+{
+    constructor(cdata, name, server, region, metric, className) 
+    {
+      this.name = name;
+      this.className = className;
+      this.metric = metric;
+      
+      this.guild = "N/A";
+      this.guildRating = "N/A";
+      if(cdata.guilds && cdata.guilds[0])
+      {
+        this.guild = cdata.guilds[0].name;
+        this.guildRating = cdata.guilds[0].zoneRanking.progress.worldRank.number;
+      }
+
+      this.guildRank = cdata.guildRank ?? "N/A";
+      this.server = server ?? "N/A";
+      this.region = region ?? "N/A";
+
+      this.wLogLink = "http://www.warcraftlogs.com/character/" + this.region + "/" + getServerName(this.server) + "/" + this.name;
+      this.raiderIoLink = "http://www.raider.io/characters/" + this.region + "/" + getServerName(this.server) + "/" + this.name,
+
+      this.ranking = {
+        eranog: {
+          rank: getMaxBossRank(cdata.eranog),
+          spec: getBossSpec(cdata.eranog)
+        },
+        council: {
+          rank: getMaxBossRank(cdata.primal_council),
+          spec: getBossSpec(cdata.primal_council),
+        },
+        sennarth: {
+          rank: getMaxBossRank(cdata.sennarth),
+          spec: getBossSpec(cdata.sennarth),
+        },
+        kurog: {
+          rank: getMaxBossRank(cdata.kurog),
+          spec: getBossSpec(cdata.kurog),
+        },
+        raszageth: {
+          rank: getMaxBossRank(cdata.raszageth),
+          spec: getBossSpec(cdata.raszageth),
+        },
+        diurna: {
+          rank: getMaxBossRank(cdata.diurna),
+          spec: getBossSpec(cdata.diurna),
+        },
+        dathea: {
+          rank: getMaxBossRank(cdata.dathea),
+          spec: getBossSpec(cdata.dathea),
+        },
+        terros: {
+          rank: getMaxBossRank(cdata.terros),
+          spec: getBossSpec(cdata.terros),
+        }
+      }
+    }
+}
+
+
+function getRankPercentRounded(rankPercent) 
+{
   return Math.round(rankPercent * 100) / 100;
 }
 
-function getMaxBossRank(bossData) {
-  return bossData.ranks && bossData.ranks[0]
-    ? Math.max(
-        ...bossData.ranks.map((d) => getRankPercentRounded(d.rankPercent))
-      )
-    : "N/A";
+function rankDataValid(bossData)
+{
+  return bossData.ranks && bossData.ranks[0];
 }
 
-function getBossSpec(bossData) {
-  return bossData.ranks && bossData.ranks[0] ? bossData.ranks[0].spec : "N/A";
+function getMaxBossRank(bossData) 
+{
+  return rankDataValid(bossData) ? 
+         Math.max(...bossData.ranks.map((d) => getRankPercentRounded(d.rankPercent))) : "";
 }
 
-function getBossPageData(bossName, metric, bossData) {
+function getBossSpec(bossData) 
+{
+  return rankDataValid(bossData) ? bossData.ranks[0].spec : "";
+}
+
+function getBossPageData(bossName, metric, bossData) 
+{
   return (
     <p>
-      {bossName} Best {metric} - {getRankPercentRounded(bossData.rank)} -{" "}
-      {bossData.spec}
+      {bossName} {metric} - {getRankPercentRounded(bossData.rank)} - {" "} {bossData.spec}
     </p>
   );
 }
@@ -113,195 +181,98 @@ function getServerName(server)
   return server.replace(" ", "-");
 }
 
-async function getCharData(name, server, region, metric, charClass) {
-  //await sleep(200)
 
-  return await client
-    .query({
-      query: CQUERY,
-      variables: {
-        region: region,
-        server: server,
-        characterName: name,
-        ID: 2587,
-        ID2: 2590,
-        ID3: 2592,
-        ID4: 2605,
-        ID5: 2607,
-        ID6: 2614,
-        ID7: 2635,
-        ID8: 2639,
-        metric: metric,
-      },
-    })
-    .then((data) => {
-      const cdata = data.data.characterData.character;
 
-      console.log("getchar", name, data);
-      if (cdata != null) {
-        const char = {
-          name: name,
-          class: charClass,
-          metric: metric,
-          server: server,
-          region: region,
-          wLogLink:
-            "http://www.warcraftlogs.com/character/" + region + "/" + getServerName(server) + "/" + name,
-          raiderIoLink:
-            "http://www.raider.io/characters/" + region + "/" + getServerName(server) + "/" + name,
-          ranking: {
-            eranog: {
-              rank: getMaxBossRank(cdata.eranog),
-              spec: getBossSpec(cdata.eranog),
-            },
-            council: {
-              rank: getMaxBossRank(cdata.primal_council),
-              spec: getBossSpec(cdata.primal_council),
-            },
-            sennarth: {
-              rank: getMaxBossRank(cdata.sennarth),
-              spec: getBossSpec(cdata.sennarth),
-            },
-            kurog: {
-              rank: getMaxBossRank(cdata.kurog),
-              spec: getBossSpec(cdata.kurog),
-            },
-            raszageth: {
-              rank: getMaxBossRank(cdata.raszageth),
-              spec: getBossSpec(cdata.raszageth),
-            },
-            diurna: {
-              rank: getMaxBossRank(cdata.diurna),
-              spec: getBossSpec(cdata.diurna),
-            },
-            dathea: {
-              rank: getMaxBossRank(cdata.dathea),
-              spec: getBossSpec(cdata.dathea),
-            },
-            terros: {
-              rank: getMaxBossRank(cdata.terros),
-              spec: getBossSpec(cdata.terros),
-            },
-          },
-        };
-
-        try {
-          char.guildrank = cdata.guildRank;
-        } catch {
-          char.guildrank = "N/A";
-        }
-
-        try {
-          char.guildrating =
-            cdata.guilds[0].zoneRanking.progress.worldRank.number;
-        } catch {
-          char.guildrating = "N/A";
-        }
-
-        try {
-          char.guild = cdata.guilds[0].name;
-        } catch {
-          char.guild = "N/A";
-        }
-
-        return char;
-      } else return;
-    })
-    .catch((err) => console.error(err));
-}
-
-/////////////////////////////////////////////////////////////////////////////////
-export default function Characters() {
-  const [characters, setCharacters] = useState([]);
-  const { data, loading, error } = useQuery(QUERY, {
-    variables: {
-      region: "US",
-    },
-  });
-
-  useEffect(() => {
-    async function fetchData() {
-      if (data) {
-        console.log("useeffect", data);
-        //const chars = [];
-        const charDataPromises =
-          data.worldData.encounter.characterRankings.rankings
-            .slice(0, 50)
-            .map((d) => {
-              return getCharData(
-                d.name,
-                d.server.name,
-                d.server.region,
-                "dps",
-                "Paladin"
-              );
-            });
-        const chars = await Promise.all(charDataPromises);
-        setCharacters(
-          chars.filter(function (element) {
-            return element !== undefined;
-          })
-        );
-      }
+// Construct and return a CharacterData object if the query data is valid
+function getCharacterData(data, name, server, region, metric, charClass)
+{
+    const cdata = data.data.characterData.character;
+    if(cdata != null)
+    {
+      return new CharacterData(cdata, 
+                               name, 
+                               server, 
+                               region,
+                               metric, 
+                               charClass);
     }
 
-    fetchData();
-  }, [data]);
+    return;
+}
 
-  /*
-    const {data, loading, error } = useQuery(QUERY, {
-        variables: {
-            "region": "US"
-        }
-    });
-*/
-  if (loading) {
-    return (
-      <h2>
-        <a
-          href="#loading"
+// Get the character data promise for the given ranking data
+async function getCharDataPromise(rankingData, metric, charClass) 
+{
+  // The set of variables to be queried for on a character
+  const charQueryVars = {
+    region: rankingData.server.region,
+    server: rankingData.server.name,
+    characterName: rankingData.name,
+    ID: 2587,
+    ID2: 2590,
+    ID3: 2592,
+    ID4: 2605,
+    ID5: 2607,
+    ID6: 2614,
+    ID7: 2635,
+    ID8: 2639,
+    metric: metric,
+  };
+
+  return await client.query({query: CQUERY, variables: charQueryVars})
+                     .then((data) => {return getCharacterData(data, 
+                                                              rankingData.name, 
+                                                              rankingData.server.name, 
+                                                              rankingData.server.region,
+                                                              metric, 
+                                                              charClass)})
+                     .catch((err) => console.error(err));
+}
+
+// Retrieve data for the top N characters in the rankings data
+async function fetchTopCharacters(data, numChars, metric, charClass)
+{
+  const topRankings = data.worldData.encounter.characterRankings.rankings.slice(0, numChars);
+  const characterPromises = topRankings.map((r) => {return getCharDataPromise(r,
+                                                                              metric, 
+                                                                              charClass)});
+      
+  return await Promise.all(characterPromises);
+}
+
+// Get the HTML data for the loading page
+function getLoadingPageData()
+{
+  return (
+    <h2>
+      <a
+        href="#loading"
+        aria-hidden="true"
+        className="aal_anchor"
+        id="loading"
+      >
+        <svg
           aria-hidden="true"
-          className="aal_anchor"
-          id="loading"
+          className="aal_svg"
+          height="16"
+          version="1.1"
+          viewBox="0 0 16 16"
+          width="16"
         >
-          <svg
-            aria-hidden="true"
-            className="aal_svg"
-            height="16"
-            version="1.1"
-            viewBox="0 0 16 16"
-            width="16"
-          >
-            <path
-              fillRule="evenodd"
-              d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"
-            ></path>
-          </svg>
-        </a>
-        Loading...
-      </h2>
-    );
-  }
-  if (error) {
-    console.error(error);
-    return null;
-  }
+          <path
+            fillRule="evenodd"
+            d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"
+          ></path>
+        </svg>
+      </a>
+      Loading...
+    </h2>
+  );
+}
 
-  /*
-      console.log(data)
-      data.worldData.encounter.characterRankings.rankings.slice(0, 5).forEach(d => {
-        console.log(d.name, d.server.name, d.server.region, "dps", "Paladin")
-        getCharData(d.name, d.server.name, d.server.region, "dps", "Paladin").then()
-        
-
-      })
-
-
-      console.log("hi")
-
-*/
-
-  console.log(characters);
+// Get the HTML data for the character list display
+function getCharactersPageData(characters)
+{
   const results = (
     <div className={styles.grid}>
       {characters.map((character) => (
@@ -336,9 +307,9 @@ export default function Characters() {
             {character.name} - {character.server} - {character.region}
           </p>
           <p>
-            Guild - {character.guild} --- World Rank {character.guildrating}
+            Guild - {character.guild} --- World Rank {character.guildRating}
           </p>
-          <p>Rank in guild - {character.guildrank}</p>
+          <p>Rank in guild - {character.guildRank}</p>
           <p style={{ color: "red" }}>
             <a href={character.wLogLink}>Warcraft Logs</a>
           </p>
@@ -360,4 +331,65 @@ export default function Characters() {
 
   return results;
 }
-//{Math.max(...data.characterData.character.encounterRankings.ranks.map(d => Math.round(d.rankPercent * 100) / 100))}
+
+// Get the HTML data to be displayed
+function getPageData(loading, error, characters)
+{
+  if (error) 
+  {
+    console.error(error);
+    return null;
+  }
+
+  if (loading) 
+  {
+    return getLoadingPageData();
+  }
+  
+  return getCharactersPageData(characters);
+}
+
+async function setCharactersList(data, numChars, metric, className, setCharactersFunc)
+{
+  const topChars = await fetchTopCharacters(data, numChars, metric, className);
+  setCharactersFunc(topChars.filter( e => { return e !== undefined; } ));
+}
+
+// Populate the CharacterData objects for the top ranking characters
+function populateCharacterData(queryData, numChars, metric, className, setCharactersFunc)
+{
+  useEffect(() => { 
+    if(queryData)
+    {
+      setCharactersList(queryData, numChars, metric, className, setCharactersFunc)
+    } 
+  }, [queryData]);
+}
+
+// Execute the query to retrieve the rankings data
+function performRankingDataQuery()
+{
+  const { data, loading, error } = useQuery(QUERY, {
+    variables: {
+      region: "US",
+    },
+  });
+  return {data, loading, error};
+}
+
+/////////////////////////////////////////////////////////////////////////////////
+export default function Characters() {
+
+  // Establish storage and setter function for the 
+  // characters data to be rendered to the HTML page
+  const [characters, setCharacters] = useState([]);
+
+  // Query the rankings data to retrieve the list of top players
+  const { data, loading, error } = performRankingDataQuery();
+
+  // Populate the character data for the top N players for a given metric and class
+  populateCharacterData(data, 20, "dps", "Paladin", setCharacters);
+
+  // Generate the HTML page data to be displayed
+  return getPageData(loading, error, characters);
+}
