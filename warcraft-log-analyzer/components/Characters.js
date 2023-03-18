@@ -2,6 +2,7 @@ import { ApolloClient, InMemoryCache, useQuery, gql } from "@apollo/client";
 import { useState, useEffect } from "react";
 import styles from "../styles/Home.module.css";
 import client from "../apollo-client";
+import { useTable } from "react-table";
 import { isPartiallyEmittedExpression } from "typescript";
 /*TODO: 
 create dict of encounterID
@@ -269,6 +270,74 @@ function getLoadingPageData()
     </h2>
   );
 }
+
+
+
+function CharacterTable({ data, onRowClick }) {
+  const data = useMemo(() => data, [data]);
+  const columns = useMemo(
+    () => [
+      {
+        Header: "Name",
+        accessor: "name"
+      },
+      {
+        Header: "Class",
+        accessor: "className"
+      },
+      {
+        Header: "Server",
+        accessor: "server"
+      },
+      {
+        Header: "Guild",
+        accessor: "guild"
+      },
+      {
+        Header: "Bosses Killed",
+        accessor: "ranking"
+      }
+    ],
+    []
+  );
+
+
+const {
+  getTableProps,
+  getTableBodyProps,
+  headerGroups,
+  rows,
+  prepareRow
+} = useTable({ columns, data });
+
+return (
+  <table {...getTableProps()} className={styles.table}>
+    <thead>
+      {headerGroups.map(headerGroup => (
+        <tr {...headerGroups.getHeaderGroupProps()}>
+          {headerGroups.headers.map(column => (
+            <th {...column.getHeaderProps()}>{column.render("Header")}</th>
+          ))}
+        </tr>
+      ))}
+    </thead>
+    <tbody {...getTableBodyProps()}>
+      {rows.map(row => {
+        prepareRow(row);
+        return (
+          <tr {...row.getRowProps()}>
+            {row.cells.map(cell => {
+              return <td {...cell.getCellProps()}>{cell.render("Cell")}</td>
+            })}
+          </tr>
+        )
+      })}
+    </tbody>
+  </table>
+)
+
+}
+
 
 // Get the HTML data for the character list display
 function getCharactersPageData(characters)
