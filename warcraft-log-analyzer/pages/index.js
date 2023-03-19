@@ -4,8 +4,8 @@ import React from 'react';
 
 import QueryBox from '../components/QueryBox'
 import InformationDisplay from '../components/InformationDisplay'
-import WarcraftLogsTable from '../components/WarcraftLogsTable'
-
+import WarcraftLogsTable from '../components/CharacterTable'
+import PopulateCharacterData from '../components/PopulateCharacterData'
 
 import { Inter } from 'next/font/google'
 import styles from '../styles/Home.module.css'
@@ -14,10 +14,13 @@ import client from "../apollo-client";
 import ClientOnly from "../components/ClientOnly";
 import Characters from "../components/Characters";
 
+
+
+
 const HomePage = ({ initialData }) => {
   const [info, setInfo] = React.useState(null);
-  const [data, setData] = React.useState(initialData)
-
+  const [characters, setCharacters] = useState([]);
+  const { data, loading, error } = performRankingDataQuery();
 
 const handleQuerySubmit = async (query) => {
   // Fetch Data Here
