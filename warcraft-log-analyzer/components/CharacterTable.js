@@ -1,9 +1,12 @@
-import React from 'react';
+import { useMemo } from 'react';
 import { useTable } from 'react-table';
-
+import styles from "../styles/Home.module.css";
 
 function CharacterTable({ data, onRowClick }) {
-    const data = useMemo(() => data, [data]);
+  console.log(data)
+  data = data
+
+  const dataH = useMemo(() => data, [data]);
     const columns = useMemo(
       () => [
         {
@@ -24,7 +27,7 @@ function CharacterTable({ data, onRowClick }) {
         },
         {
           Header: "Bosses Killed",
-          accessor: "ranking"
+          accessor: "ranking.eranog.rank"
         }
       ],
       []
@@ -42,13 +45,13 @@ function CharacterTable({ data, onRowClick }) {
   return (
     <table {...getTableProps()} className={styles.table}>
       <thead>
-        {headerGroups.map(headerGroup => (
-          <tr {...headerGroups.getHeaderGroupProps()}>
-            {headerGroups.headers.map(column => (
+        
+          <tr {...headerGroups[0].getHeaderGroupProps()}>
+            {headerGroups[0].headers.map(column => (
               <th {...column.getHeaderProps()}>{column.render("Header")}</th>
             ))}
           </tr>
-        ))}
+        
       </thead>
       <tbody {...getTableBodyProps()}>
         {rows.map(row => {
@@ -56,6 +59,7 @@ function CharacterTable({ data, onRowClick }) {
           return (
             <tr {...row.getRowProps()}>
               {row.cells.map(cell => {
+                console.log(cell)
                 return <td {...cell.getCellProps()}>{cell.render("Cell")}</td>
               })}
             </tr>

@@ -1,43 +1,42 @@
 import Head from 'next/head'
 import React from 'react';
-
+import { useEffect, useState } from "react";
 
 import QueryBox from '../components/QueryBox'
 import InformationDisplay from '../components/InformationDisplay'
-import WarcraftLogsTable from '../components/CharacterTable'
-import PopulateCharacterData from '../components/PopulateCharacterData'
+import CharacterTable from '../components/CharacterTable'
+import Characters from '../components/PopulateCharacterData'
+var char = require('../components/PopulateCharacterData')
 
 import { Inter } from 'next/font/google'
 import styles from '../styles/Home.module.css'
 import { gql } from "@apollo/client";
 import client from "../apollo-client";
 import ClientOnly from "../components/ClientOnly";
-import Characters from "../components/Characters";
 
 
 
 
-const HomePage = ({ initialData }) => {
-  const [info, setInfo] = React.useState(null);
+const HomePage = () => {
+  
+  /*
+  const [info, setInfo] = useState(null);
   const [characters, setCharacters] = useState([]);
-  const { data, loading, error } = performRankingDataQuery();
-
+  const [data, setData] = useState(null)
+  const [isLoading, setIsLoading] = useState(false)
+  
+  
 const handleQuerySubmit = async (query) => {
   // Fetch Data Here
-  try {
-    const response = await axios.get('/api/your-endpoint', {
-      params: { query },
-    });
-    setData(response.data)
-  } catch (error) {
-    console.error(error)
-  }
+  setIsLoading(true);
+  setData(Characters(query, characters, setCharacters));
+  setIsLoading(false);
 }
 
 const handleRowClick = (rowData) => {
   setInfo(rowData); //adjust this for information
 }
-
+*/
 
 
   return (
@@ -50,16 +49,7 @@ const handleRowClick = (rowData) => {
       <main>
         
         <ClientOnly>
-          <div className={styles.maine}>
-
-            <div className={styles.sideBar}>
-              <QueryBox onQuerySubmit={handleQuerySubmit} />
-              <InformationDisplay info={info}></InformationDisplay>
-            </div>
-            <div className={styles.tableScreen}>
-              <WarcraftLogsTable data={data} onRowClick={handleRowClick} />
-            </div>
-          </div>
+          <Characters/>
           
         </ClientOnly>
       </main>
