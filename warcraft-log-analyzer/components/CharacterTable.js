@@ -2,6 +2,26 @@ import { useMemo } from 'react';
 import { useTable } from 'react-table';
 import styles from "../styles/Home.module.css";
 
+
+function getRankingAverage(ranking){
+  
+  const sum = [0, 0]
+
+  ranking.forEach(d => {
+    if (d[1].rank != "") {
+      sum[0] += d[1].rank
+      sum[1]++
+    }
+    
+  });
+const average = Math.round((sum[0] / sum[1]) * 100 ) / 100;
+    console.log(average)
+    return average;
+
+
+
+}
+
 function CharacterTable({ data, onRowClick }) {
   console.log(data)
   data = data
@@ -9,6 +29,11 @@ function CharacterTable({ data, onRowClick }) {
   const dataH = useMemo(() => data, [data]);
     const columns = useMemo(
       () => [
+        {
+          Header: 'Action',
+          accessor: 'action',
+          Cell: props => <button className="btn1" onClick={() => onRowClick(props?.row?.original)}>Details</button>,
+        },
         {
           Header: "Name",
           accessor: "name"
@@ -26,9 +51,11 @@ function CharacterTable({ data, onRowClick }) {
           accessor: "guild"
         },
         {
-          Header: "Bosses Killed",
-          accessor: "ranking.eranog.rank"
+          Header: "Mythic Average Score",
+          accessor: 'ranking',
+          Cell: row => (`${getRankingAverage(row.row.original.ranking)}`)
         }
+        
       ],
       []
     );
@@ -57,9 +84,9 @@ function CharacterTable({ data, onRowClick }) {
         {rows.map(row => {
           prepareRow(row);
           return (
-            <tr {...row.getRowProps()}>
+            <tr  {...row.getRowProps()}>
               {row.cells.map(cell => {
-                console.log(cell)
+                console.log("GI", cell)
                 return <td {...cell.getCellProps()}>{cell.render("Cell")}</td>
               })}
             </tr>

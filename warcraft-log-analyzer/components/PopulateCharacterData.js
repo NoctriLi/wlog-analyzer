@@ -73,8 +73,8 @@ const CQUERY = gql`
 ////////////////////
 
 
-
-///INITIAL QUERY///
+/////////////////////
+///INITIAL REQUEST///
 // Execute the query to retrieve the rankings data
 
 const grade = {"C-": 10, "C": 9, "C+": 8, "B-": 7, "B": 6, "B+": 5, "A-": 4, "A": 3, "A+": 2, "S": 1}
@@ -96,7 +96,37 @@ async function performRankingDataQuery(query) {
   return result.data;
 }
 ////////////////
-///SUB-QUERY////
+///SUB-REQUEST////
+// Get the character data promise for the given ranking data
+async function getCharDataPromise(rankingData, metric, charClass) 
+{
+  // The set of variables to be queried for on a character
+
+  return await client.query({query: CQUERY, variables: {
+    region: rankingData.server.region,
+    server: rankingData.server.name,
+    characterName: rankingData.name,
+    ID: 2587,
+    ID2: 2590,
+    ID3: 2592,
+    ID4: 2605,
+    ID5: 2607,
+    ID6: 2614,
+    ID7: 2635,
+    ID8: 2639,
+    metric: metric,
+  }})
+                     .then((data) => {return getCharacterData(data, 
+                                                              rankingData.name, 
+                                                              rankingData.server.name, 
+                                                              rankingData.server.region,
+                                                              metric, 
+                                                              charClass)})
+                     .catch((err) => console.error(err));
+}
+
+
+
 // Retrieve data for the top N characters in the rankings data
 async function fetchTopCharacters(data, numChars, metric, charClass)
 {
@@ -116,7 +146,10 @@ async function setCharactersList(data, numChars, metric, className, setCharacter
   const topChars = await fetchTopCharacters(data, numChars, metric, className);
   setCharactersFunc(topChars.filter( e => { return e !== undefined; } ));
 }
-///
+///END-REQUEST///
+/////////////////
+
+
 
 ////////////////////
 /////CONTRUCTOR/////
@@ -144,40 +177,41 @@ class CharacterData
       this.wLogLink = "http://www.warcraftlogs.com/character/" + this.region + "/" + getServerName(this.server) + "/" + this.name;
       this.raiderIoLink = "http://www.raider.io/characters/" + this.region + "/" + getServerName(this.server) + "/" + this.name,
 
-      this.ranking = {
-        eranog: {
+      this.ranking = [
+        ['Eranog', {
           rank: getMaxBossRank(cdata.eranog),
           spec: getBossSpec(cdata.eranog)
-        },
-        council: {
+        }],
+        ['Council', {
           rank: getMaxBossRank(cdata.primal_council),
           spec: getBossSpec(cdata.primal_council),
-        },
-        sennarth: {
+        }],
+        ['Sennarth', {
           rank: getMaxBossRank(cdata.sennarth),
           spec: getBossSpec(cdata.sennarth),
-        },
-        kurog: {
+        }],
+        ['Kurog', {
           rank: getMaxBossRank(cdata.kurog),
           spec: getBossSpec(cdata.kurog),
-        },
-        raszageth: {
+        }],
+        ['Raszageth', {
           rank: getMaxBossRank(cdata.raszageth),
           spec: getBossSpec(cdata.raszageth),
-        },
-        diurna: {
+        }],
+        ['Diurna', {
           rank: getMaxBossRank(cdata.diurna),
           spec: getBossSpec(cdata.diurna),
-        },
-        dathea: {
+        }],
+        ['Dathea', {
           rank: getMaxBossRank(cdata.dathea),
           spec: getBossSpec(cdata.dathea),
-        },
-        terros: {
+        }],
+        ['Terros', {
           rank: getMaxBossRank(cdata.terros),
           spec: getBossSpec(cdata.terros),
-        }
-      }
+        }]
+      ]
+      
     }
 }
 
@@ -238,101 +272,8 @@ function getCharacterData(data, name, server, region, metric, charClass)
 
 
 
-// Get the character data promise for the given ranking data
-async function getCharDataPromise(rankingData, metric, charClass) 
-{
-  // The set of variables to be queried for on a character
 
-  return await client.query({query: CQUERY, variables: {
-    region: rankingData.server.region,
-    server: rankingData.server.name,
-    characterName: rankingData.name,
-    ID: 2587,
-    ID2: 2590,
-    ID3: 2592,
-    ID4: 2605,
-    ID5: 2607,
-    ID6: 2614,
-    ID7: 2635,
-    ID8: 2639,
-    metric: metric,
-  }})
-                     .then((data) => {return getCharacterData(data, 
-                                                              rankingData.name, 
-                                                              rankingData.server.name, 
-                                                              rankingData.server.region,
-                                                              metric, 
-                                                              charClass)})
-                     .catch((err) => console.error(err));
-}
-/*
-function getCharactersPageData({ data, onRowClick }) {
-  data = data?data:[{name: "N/A"},{name: "N/A"}]
-  const dataH = useMemo(() => data, [data]);
-    const columns = useMemo(
-      () => [
-        {
-          Header: "Name",
-          accessor: "name"
-        },
-        {
-          Header: "Class",
-          accessor: "className"
-        },
-        {
-          Header: "Server",
-          accessor: "server"
-        },
-        {
-          Header: "Guild",
-          accessor: "guild"
-        },
-        {
-          Header: "Bosses Killed",
-          accessor: "ranking"
-        }
-      ],
-      []
-    );
-  
-  
-  const {
-    getTableProps,
-    getTableBodyProps,
-    headerGroups,
-    rows,
-    prepareRow
-  } = useTable({ columns, data });
-  
-  const results = (
-    <table {...getTableProps()} className={styles.table}>
-      <thead>
-        
-          <tr {...headerGroups[0].getHeaderGroupProps()}>
-            {headerGroups[0].headers.map(column => (
-              <th {...column.getHeaderProps()}>{column.render("Header")}</th>
-            ))}
-          </tr>
-        
-      </thead>
-      <tbody {...getTableBodyProps()}>
-        {rows.map(row => {
-          prepareRow(row);
-          return (
-            <tr {...row.getRowProps()}>
-              {row.cells.map(cell => {
-                return <td {...cell.getCellProps()}>{cell.render("Cell")}</td>
-              })}
-            </tr>
-          )
-        })}
-      </tbody>
-    </table>
-  )
 
-  return results;
-}
-*/
 function getLoadingPageData()
 {
   return (
@@ -361,7 +302,7 @@ function getLoadingPageData()
     </h2>
   );
 }
-// Get the HTML data to be displayed
+
 function getPageData(loading, error, characters, onRowClick)
 {
   if (error) 
@@ -409,22 +350,19 @@ const [query, setQuery] = useState({
   grade: null,
 });
 
-
-
+////////////////////////////////////////////
+///Gets form data then sets state of data///
 const handleQuerySubmit = async (query) => {
   console.log(query)
-  // Fetch Data Here
-  
   performRankingDataQuery(query).then(d => setData(d))
 }
-
-
-
 
 
 const handleRowClick = (rowData) => {
   setInfo(rowData); //adjust this for information
 }
+
+
   // Establish storage and setter function for the 
   // characters data to be rendered to the HTML page
   
