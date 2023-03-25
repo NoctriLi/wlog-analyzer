@@ -174,8 +174,8 @@ class CharacterData
       this.server = server ?? "N/A";
       this.region = region ?? "N/A";
 
-      this.wLogLink = "http://www.warcraftlogs.com/character/" + this.region + "/" + getServerName(this.server) + "/" + this.name;
-      this.raiderIoLink = "http://www.raider.io/characters/" + this.region + "/" + getServerName(this.server) + "/" + this.name,
+      this.wLogLink = "https://www.warcraftlogs.com/character/" + this.region + "/" + getServerName(this.server) + "/" + this.name;
+      this.raiderIoLink = "https://raider.io/characters/" + this.region + "/" + getServerName(this.server) + "/" + this.name,
 
       this.ranking = [
         ['Eranog', {

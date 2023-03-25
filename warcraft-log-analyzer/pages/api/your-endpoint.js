@@ -1,16 +1,13 @@
-import axios from 'axios';
+var express = require('express')
+var cors = require('cors')
+var app = express()
 
+app.use(cors())
 
-export default async function handler(req, res) {
-  const { query } = req.query;
+app.get('/', function (req, res, next) {
+  res.json({msg: 'This is CORS-enabled for all origins!'})
+})
 
-  try {
-    const response = await axios.get('URL', {
-      params: {query},
-    })
-
-    res.status(200).json(response.data);
-  } catch (error) {
-    res.status(500).json( {error: 'An Error has occured during the fetching process'})
-  }
-}
+app.listen(80, function () {
+  console.log('CORS-enabled web server listening on port 80')
+})
