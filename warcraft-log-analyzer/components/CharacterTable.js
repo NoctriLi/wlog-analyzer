@@ -32,7 +32,7 @@ function CharacterTable({ data, onRowClick }) {
         {
           Header: 'Action',
           accessor: 'action',
-          Cell: props => <button className="btn1" onClick={() => onRowClick(props?.row?.original)}>Details</button>,
+          Cell: props => <button className="btn btn-secondary" onClick={() => onRowClick(props?.row?.original)}>Details</button>,
         },
         {
           Header: "Name",
@@ -53,7 +53,7 @@ function CharacterTable({ data, onRowClick }) {
         {
           Header: "Mythic Average Score",
           accessor: 'ranking',
-          Cell: row => (`${getRankingAverage(row.row.original.ranking)}`)
+          Cell: row => `${getRankingAverage(row.row.original.ranking)}`
         }
         
       ],
@@ -70,12 +70,12 @@ function CharacterTable({ data, onRowClick }) {
   } = useTable({ columns, data });
   
   return (
-    <table {...getTableProps()} className={styles.table}>
+    <table  {...getTableProps()} className="table text-bg-dark m-2">
       <thead>
         
           <tr {...headerGroups[0].getHeaderGroupProps()}>
             {headerGroups[0].headers.map(column => (
-              <th {...column.getHeaderProps()}>{column.render("Header")}</th>
+              <th className='text-center' {...column.getHeaderProps()}>{column.render("Header")}</th>
             ))}
           </tr>
         
@@ -87,7 +87,7 @@ function CharacterTable({ data, onRowClick }) {
             <tr  {...row.getRowProps()}>
               {row.cells.map(cell => {
                 console.log("GI", cell)
-                return <td {...cell.getCellProps()}>{cell.render("Cell")}</td>
+                return <td className='text-center' {...cell.getCellProps()}>{cell.render("Cell")}</td>
               })}
             </tr>
           )

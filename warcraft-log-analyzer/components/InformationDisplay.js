@@ -5,7 +5,7 @@ import createHttpLink from "@apollo/client"
 //from a webpage get the text from within <div title="Blizzard Profile" and title="Discord Profile"
 function getProfiles   (htmlDocument) {
 
-    const regex = /"profile_banner":(.*?)"isClaimed":true/g;
+    const regex = /"profile_banner":(.*?)"isClaimed":/g;
     const result = regex.exec(htmlDocument)[1];
 
     console.log(result)
@@ -45,17 +45,24 @@ async function getWebPageData(info) {
 }
 
 
-const InformationDisplay = ({ info }) => {
+const InformationDisplay = ({ info, detailPressed, setDetailPressed }) => {
     console.log("HILOKOKOK", info)
     const [profiles, setProfiles] = React.useState([]);
     React.useEffect(() => {
-        if (info) {
+        if (info && detailPressed) {
             console.log('Fetching URL:', info.raiderIoLink);
-            getWebPageData(info)
+            try{
+
+                getWebPageData(info)
                 .then(htmlDocument => {
                     const profiles = getProfiles(htmlDocument);
                     setProfiles(profiles);
                 });
+            } catch (error) {
+                console.log('Error fetching data from Raider.io', error);
+            } finally {
+                setDetailPressed(false);
+            }
         }
     }, [info]);
     console.log("PROFILES", profiles)
@@ -64,38 +71,50 @@ const InformationDisplay = ({ info }) => {
 
     if(info)
     return (
-        <div>
-            <p>_</p>
-            <p>_</p>
-            <p>_</p>
-            <p>_</p>
-            {<p>{info.name}</p>}
-            {<p>Server: {info.server}-{info.region}</p>}
-            {<p>Guild: {info.guild}</p>}
-            {<p>Guild Rank: {info.guildRank}</p>}
-            {<p>Guild World Ranking: {info.guildRating}</p>}
-            <p>_</p>
-            <p>_</p>
-            <p>_</p>
-            {info.ranking.map(d =>  <p> {d[0]}: {d[1].rank || 'N/A'} - {d[1].spec}</p>)}
-            <p>_</p>
-            <p>_</p>
-            <p>_</p>
-            {<p><a href={info.wLogLink}>WarcraftLogs Link</a> </p>}
-            <p>_</p>
-            {<p><a href={info.raiderIoLink}>Raider.io Link</a> </p>}
-            <p>_</p>
-            <p>_</p>
-            <p>_</p>
-            {<p>Discord: {profiles[0]}</p>}
-            {<p>B-Net: {profiles[1]}</p>}
+        <div className=' text-center'>
+            <ul className='list-group list-group-flush border'>
+
+                {<li className='list-group-item bg-dark text-bg-dark fs-3 pb-0'>{info.name}</li>}
+                {<li className='list-group-item bg-dark text-bg-dark pt-0'>{info.server}-{info.region}</li>}
+                {<li className='list-group-item bg-dark text-bg-dark m-0 p-0 fs-4'>{"<" + info.guild + ">"}</li>}
+                {<li className='list-group-item bg-dark text-bg-dark p-0'>Guild Rank: {info.guildRank}</li>}
+                {<li className='list-group-item bg-dark text-bg-dark pt-0 pb-2'>Guild World Ranking: {info.guildRating}</li>}
+            </ul>    
+                <table className="table table-dark">
+                    <thead>
+                        <tr>
+                            <th scope="col">Boss</th>
+                            <th scope="col">Rank</th>
+                            <th scope="col">Spec</th>                   
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                    {info.ranking.map(d =>  (
+
+                        
+                        <tr>
+                            <td scope="row">{d[0]}</td>
+                            <td> {d[1].rank || 'N/A'}</td>
+                            <td>{d[1].spec}</td>
+                        </tr>
+                        ) )}
+                    </tbody>
+                </table>
+            
+                {<li className='list-group-item text-danger pt-2'><a href={info.wLogLink}>WarcraftLogs Link</a> </li>}
+                {<li className='list-group-item text-danger'><a href={info.raiderIoLink}>Raider.io Link</a> </li>}
+
+                {<li className='list-group-item bg-dark text-bg-dark'>Discord: {profiles[0]}</li>}
+                {<li className='list-group-item bg-dark text-bg-dark'>B-Net: {profiles[1]}</li>}
+            
             
             
         </div>
     )
     else return (
         <div>
-            <p></p>
+            <li></li>
         </div>
     )
 }
@@ -103,22 +122,22 @@ const InformationDisplay = ({ info }) => {
 export default InformationDisplay;
 
 /*
-            {<p>Guild: {info.guild}</p>}
-            {<p>Guild Rank: {info.guildRank}</p>}
-            {<p>Guild World Ranking{info.guildRating}</p>}
+            {<li>Guild: {info.guild}</li>}
+            {<li>Guild Rank: {info.guildRank}</li>}
+            {<li>Guild World Ranking{info.guildRating}</li>}
             
-            {<p><a href={info.wLogLink}>WarcraftLogs Link</a> </p>}
-            {<p><a href={info.raiderIoLink}>Raider.io Link</a> </p>}
+            {<li><a href={info.wLogLink}>WarcraftLogs Link</a> </li>}
+            {<li><a href={info.raiderIoLink}>Raider.io Link</a> </li>}
             {info.ranking.map(d => {
-                return <p>{d.rank} - {d.spec}</p
+                return <li>{d.rank} - {d.spec}</li
             })}
-            {<p>Server: {info.server}-{info.region}</p>}
+            {<li>Server: {info.server}-{info.region}</li>}
             
-            {<p>{info.}</p>}
-            {<p>{info.}</p>}
-            {<p>{info.}</p>}
-            {<p>{info.}</p>}
-            {<p>{info.}</p>}
-            {<p>{info.}</p>}
-            {<p>{info.}</p>}
-            {<p>{info.}</p>}*/
+            {<li>{info.}</li>}
+            {<li>{info.}</li>}
+            {<li>{info.}</li>}
+            {<li>{info.}</li>}
+            {<li>{info.}</li>}
+            {<li>{info.}</li>}
+            {<li>{info.}</li>}
+            {<li>{info.}</li>}*/

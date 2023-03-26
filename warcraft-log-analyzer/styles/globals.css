@@ -98,6 +98,6 @@ a {
 
 @media (prefers-color-scheme: dark) {
   html {
-    color-scheme: light;
+    color-scheme: dark;
   }
 }

@@ -10,14 +10,14 @@ import CharacterTable from '../components/CharacterTable'
 ///////////////////
 //////QUERIES//////
 const QUERY = gql`
-  query CharacterData($region: String! $class: String! $metric: CharacterRankingMetricType!) {
+  query CharacterData($region: String! $class: String! $metric: CharacterRankingMetricType! $page: Int!) {
     worldData {
       encounter(id: 2587) {
         characterRankings(
           serverRegion: $region
           className: $class
           metric: $metric
-          page: 10
+          page: $page
           partition: 1
         )
       }
@@ -81,7 +81,8 @@ const grade = {"C-": 10, "C": 9, "C+": 8, "B-": 7, "B": 6, "B+": 5, "A-": 4, "A"
 
 async function performRankingDataQuery(query) {
   const grade = {"C-": 10, "C": 9, "C+": 8, "B-": 7, "B": 6, "B+": 5, "A-": 4, "A": 3, "A+": 2, "S": 1};
-  console.log("HIIIIIII", query)
+  console.log("HIIIIIII", query, grade[query.grade])
+  let page = grade[query.grade]
   const result = await client.query({
     query: QUERY,
     variables: {
@@ -343,6 +344,7 @@ export default function Characters() {
 const [info, setInfo] = useState(null);
 const [characters, setCharacters] = useState([]);
 const [data, setData] = useState(null)
+const [detailPressed, setDetailPressed] = useState(false)
 const [query, setQuery] = useState({
   region: null,
   metric: null,
@@ -360,6 +362,7 @@ const handleQuerySubmit = async (query) => {
 
 const handleRowClick = (rowData) => {
   setInfo(rowData); //adjust this for information
+  setDetailPressed(true);
 }
 
 
@@ -383,15 +386,21 @@ const handleRowClick = (rowData) => {
 
   // Generate the HTML page data to be displayed
   return (
-    <div className={styles.maine}>
-
-            <div className={styles.sideBar}>
-              <QueryBox onQuerySubmit={handleQuerySubmit} query={query} setQuery={setQuery} />
-              <InformationDisplay info={info}></InformationDisplay>
-            </div>
-            <div className={styles.tableScreen}>
-              <CharacterTable data={characters} onRowClick={handleRowClick} />
-            </div>
-          </div>
+    <div>
+      <div className="d-flex flex-nowrap">
+      
+        <div className={`${styles.ml} navbar navbar-expand-md navbar-dark bg-dark d-flex fixed-top border-bottom`}>
+          <QueryBox onQuerySubmit={handleQuerySubmit} query={query} setQuery={setQuery} />
+        </div>
+              
+        <div id={styles.sidebar} className="d-flex flex-column flex-shrink-0 p-3 text-bg-dark fixed-top border-end">             
+          <InformationDisplay detailPressed={detailPressed} setDetailPressed={setDetailPressed} info={info}></InformationDisplay>
+        </div>
+              
+        <div className={styles.tableScreen}>
+          <CharacterTable  data={characters} onRowClick={handleRowClick} />
+        </div>
+      </div>
+    </div>
   );
 }
