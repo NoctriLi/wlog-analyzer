@@ -5,7 +5,7 @@ const httpLink = new createHttpLink({
     uri: "https://www.warcraftlogs.com/api/v2/client",
     headers: {
         "Content-Type": "application/json",
-        "Authorization": process.env.MY_SECRET_KEY
+        "Authorization": 'Bearer' + process.env.NEXT_PUBLIC_MY_SECRET_KEY
     },
     fetchOptions: {
         method: "POST",
