@@ -375,7 +375,7 @@ const [query, setQuery] = useState({
 const handleQuerySubmit = async (query) => {
   console.log(query);
   if (query.region && query.metric && query.class && query.grade) {
-    performRankingDataQuery(query).then((d) => setData(d));
+    await performRankingDataQuery(query).then((d) => setData(d));
   } else {
     console.log("Incomplete query data");
   }
