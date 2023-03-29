@@ -374,12 +374,17 @@ const [query, setQuery] = useState({
 ///Gets form data then sets state of data///
 const handleQuerySubmit = async (query) => {
   console.log(query);
-  if (query.region && query.metric && query.class && query.grade) {
-    await performRankingDataQuery(query).then((d) => setData(d));
-  } else {
-    console.log("Incomplete query data");
+  try {
+
+    if (query.region && query.metric && query.class && query.grade) {
+      await performRankingDataQuery(query).then((d) => setData(d));
+    } else {
+      console.log("Incomplete query data");
+    }
+  } catch (error) {
+    console.error(error);
   }
-}
+  }
 
 
 const handleRowClick = (rowData) => {
