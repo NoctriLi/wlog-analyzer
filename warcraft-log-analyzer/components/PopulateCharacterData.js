@@ -7,12 +7,20 @@ import QueryBox from '../components/QueryBox'
 import InformationDisplay from '../components/InformationDisplay'
 import CharacterTable from '../components/CharacterTable'
 
+const Bottleneck = require("bottleneck");
+
+const limiter = new Bottleneck({
+  maxConcurrent: 10,
+  minTime: 5000,
+});
+
+
 ///////////////////
 //////QUERIES//////
 const QUERY = gql`
   query CharacterData($region: String! $class: String! $metric: CharacterRankingMetricType! $page: Int!) {
     worldData {
-      encounter(id: 2587) {
+      encounter(id: 2639) {
         characterRankings(
           serverRegion: $region
           className: $class
@@ -21,6 +29,11 @@ const QUERY = gql`
           partition: 1
         )
       }
+    }
+    rateLimitData {
+      limitPerHour
+      pointsResetIn
+      pointsSpentThisHour
     }
   }
 `;
@@ -83,18 +96,23 @@ async function performRankingDataQuery(query) {
   const grade = {"C-": 10, "C": 9, "C+": 8, "B-": 7, "B": 6, "B+": 5, "A-": 4, "A": 3, "A+": 2, "S": 1};
   console.log("HIIIIIII", query, grade[query.grade])
   let page = grade[query.grade]
-  const result = await client.query({
-    query: QUERY,
-    variables: {
-      region: query.region,
-      metric: query.metric,
-      class: query.class,
-      page: grade[query.grade],
-    },
-    skip: !query.region || query.metric == '' || query.class == '' || !query.grade,
-  });
 
-  return result.data;
+
+  const result = await limiter.schedule(async () => {
+
+    const response = await client.query({
+      query: QUERY,
+      variables: {
+        region: query.region,
+        metric: query.metric,
+        class: query.class,
+        page: grade[query.grade],
+      },
+      skip: query.region == '' || query.metric == '' || query.class == '' || query.grade == '',
+    });
+    return response.data
+  })
+  return result;
 }
 ////////////////
 ///SUB-REQUEST////
@@ -131,7 +149,7 @@ async function getCharDataPromise(rankingData, metric, charClass)
 // Retrieve data for the top N characters in the rankings data
 async function fetchTopCharacters(data, numChars, metric, charClass)
 {
-  const topRankings = data.worldData.encounter.characterRankings.rankings.slice(0, 10);
+  const topRankings = data.worldData.encounter.characterRankings.rankings;
   const characterPromises = topRankings.map((r) => {
     return getCharDataPromise(r,
       metric, 
@@ -346,17 +364,21 @@ const [characters, setCharacters] = useState([]);
 const [data, setData] = useState(null)
 const [detailPressed, setDetailPressed] = useState(false)
 const [query, setQuery] = useState({
-  region: null,
-  metric: null,
-  class: null,
-  grade: null,
+  region: '',
+  metric: '',
+  class: '',
+  grade: '',
 });
 
 ////////////////////////////////////////////
 ///Gets form data then sets state of data///
 const handleQuerySubmit = async (query) => {
-  console.log(query)
-  performRankingDataQuery(query).then(d => setData(d))
+  console.log(query);
+  if (query.region && query.metric && query.class && query.grade) {
+    performRankingDataQuery(query).then((d) => setData(d));
+  } else {
+    console.log("Incomplete query data");
+  }
 }
 
 
@@ -391,6 +413,8 @@ const handleRowClick = (rowData) => {
       
         <div className={`${styles.ml} navbar navbar-expand-md navbar-dark bg-dark d-flex fixed-top border-bottom`}>
           <QueryBox onQuerySubmit={handleQuerySubmit} query={query} setQuery={setQuery} />
+          <p>{data && (data.rateLimitData.pointsSpentThisHour + " / " + data.rateLimitData.limitPerHour) + " points used..."}</p>
+          <p>{data && (Math.round(data.rateLimitData.pointsResetIn / 60)) + " min until reset"}</p>
         </div>
               
         <div id={styles.sidebar} className="d-flex flex-column flex-shrink-0 p-3 text-bg-dark fixed-top border-end">             
@@ -398,7 +422,7 @@ const handleRowClick = (rowData) => {
         </div>
               
         <div className={styles.tableScreen}>
-          <CharacterTable  data={characters} onRowClick={handleRowClick} />
+          <CharacterTable  data={characters} onRowClick={handleRowClick} detailPressed={detailPressed} setDetailPressed={setDetailPressed} />
         </div>
       </div>
     </div>

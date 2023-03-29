@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useTable } from 'react-table';
 import styles from "../styles/Home.module.css";
 
@@ -16,49 +16,67 @@ function getRankingAverage(ranking){
   });
 const average = Math.round((sum[0] / sum[1]) * 100 ) / 100;
     console.log(average)
-    return average;
+    return average + " / " + sum[1] + " Bosses";
 
 
 
 }
 
 function CharacterTable({ data, onRowClick }) {
-  console.log(data)
-  data = data
+
+  const [buttonDisabled, setButtonDisabled] = useState(false);
+  const [isButtonDisabled, setIsButtonDisabled] = useState(false);
+
+
+  
 
   const dataH = useMemo(() => data, [data]);
-    const columns = useMemo(
-      () => [
-        {
-          Header: 'Action',
-          accessor: 'action',
-          Cell: props => <button className="btn btn-secondary" onClick={() => onRowClick(props?.row?.original)}>Details</button>,
-        },
-        {
-          Header: "Name",
-          accessor: "name"
-        },
-        {
-          Header: "Class",
-          accessor: "className"
-        },
-        {
-          Header: "Server",
-          accessor: "server"
-        },
-        {
-          Header: "Guild",
-          accessor: "guild"
-        },
-        {
-          Header: "Mythic Average Score",
-          accessor: 'ranking',
-          Cell: row => `${getRankingAverage(row.row.original.ranking)}`
-        }
-        
-      ],
-      []
-    );
+
+  const columns = useMemo(
+    () => [
+      {
+        Header: '',
+        accessor: 'action',
+        Cell: props => (
+          <button
+            className="btn btn-secondary"
+            disabled={isButtonDisabled}
+            onClick={() => {
+              setIsButtonDisabled(true);
+              onRowClick(props?.row?.original);
+              setTimeout(() => {
+            setIsButtonDisabled(false);
+          }, 3000);
+            }}
+          >
+            Details
+          </button>
+        ),
+      },
+      {
+        Header: "Name",
+        accessor: "name",
+      },
+      {
+        Header: "Class",
+        accessor: "className",
+      },
+      {
+        Header: "Server",
+        accessor: "server",
+      },
+      {
+        Header: "Guild",
+        accessor: "guild",
+      },
+      {
+        Header: "Mythic Average Score",
+        accessor: 'ranking',
+        Cell: row => `${getRankingAverage(row.row.original.ranking)}`
+      }
+    ],
+    [isButtonDisabled]
+  );
   
   
   const {

@@ -1,11 +1,17 @@
-import React from 'react';
+import {useState, useEffect} from 'react';
 import createHttpLink from "@apollo/client"
 
 
 //from a webpage get the text from within <div title="Blizzard Profile" and title="Discord Profile"
-function getProfiles   (htmlDocument) {
+function getProfiles  (htmlDocument) {
+
+
 
     const regex = /"profile_banner":(.*?)"isClaimed":/g;
+
+    try {
+
+    
     const result = regex.exec(htmlDocument)[1];
 
     console.log(result)
@@ -24,9 +30,13 @@ function getProfiles   (htmlDocument) {
         profiles[1] = match[3];
       }
     }
-
+    
     
     return profiles;
+    } catch (error) {
+        console.log('Error fetching data from Raider.io', error);
+        
+    } 
 }
 
 
@@ -47,21 +57,28 @@ async function getWebPageData(info) {
 
 const InformationDisplay = ({ info, detailPressed, setDetailPressed }) => {
     console.log("HILOKOKOK", info)
-    const [profiles, setProfiles] = React.useState([]);
-    React.useEffect(() => {
+    const [profiles, setProfiles] = useState(['N/A', 'N/A']);
+    const [errorMessage, setErrorMessage] = useState('');
+
+    useEffect(() => {
         if (info && detailPressed) {
             console.log('Fetching URL:', info.raiderIoLink);
             try{
 
                 getWebPageData(info)
                 .then(htmlDocument => {
-                    const profiles = getProfiles(htmlDocument);
-                    setProfiles(profiles);
+                   
+                    setProfiles(getProfiles(htmlDocument) || ['N/A', 'N/A']);
                 });
             } catch (error) {
                 console.log('Error fetching data from Raider.io', error);
-            } finally {
+                setErrorMessage('Error fetching data from Raider.io, try again')
+                setTimeout(() => {
+                    setErrorMessage('')
+                }, 2000);
+            } finally {          
                 setDetailPressed(false);
+                
             }
         }
     }, [info]);
@@ -72,6 +89,7 @@ const InformationDisplay = ({ info, detailPressed, setDetailPressed }) => {
     if(info)
     return (
         <div className=' text-center'>
+            {errorMessage && <div className="error">{errorMessage}</div>}
             <ul className='list-group list-group-flush border'>
 
                 {<li className='list-group-item bg-dark text-bg-dark fs-3 pb-0'>{info.name}</li>}
@@ -102,11 +120,11 @@ const InformationDisplay = ({ info, detailPressed, setDetailPressed }) => {
                     </tbody>
                 </table>
             
-                {<li className='list-group-item text-danger pt-2'><a href={info.wLogLink}>WarcraftLogs Link</a> </li>}
-                {<li className='list-group-item text-danger'><a href={info.raiderIoLink}>Raider.io Link</a> </li>}
+                <li className='list-group-item text-danger pt-2'><a target="_blank" href={info.wLogLink}>WarcraftLogs Link</a> </li>
+                <li className='list-group-item text-danger'><a target="_blank" href={info.raiderIoLink}>Raider.io Link</a> </li>
 
-                {<li className='list-group-item bg-dark text-bg-dark'>Discord: {profiles[0]}</li>}
-                {<li className='list-group-item bg-dark text-bg-dark'>B-Net: {profiles[1]}</li>}
+                <li className='list-group-item bg-dark text-bg-dark'>Discord: {profiles[0]}</li>
+                <li className='list-group-item bg-dark text-bg-dark'>B-Net: {profiles[1]}</li>
             
             
             
