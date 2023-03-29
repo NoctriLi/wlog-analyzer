@@ -81,7 +81,7 @@ const InformationDisplay = ({ info, detailPressed, setDetailPressed }) => {
                 
             }
         }
-    }, [info]);
+    }, [info, detailPressed, setDetailPressed]);
     console.log("PROFILES", profiles)
 
 

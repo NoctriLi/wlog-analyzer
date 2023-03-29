@@ -400,7 +400,7 @@ const handleRowClick = (rowData) => {
 
       populateCharacterData(data, 20, query.metric, query.class, setCharacters);
     }
-  }, [data])
+  }, [data, query.metric, query.class])
 
 
 

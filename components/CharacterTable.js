@@ -92,20 +92,24 @@ function CharacterTable({ data, onRowClick }) {
       <thead>
         
           <tr {...headerGroups[0].getHeaderGroupProps()}>
-            {headerGroups[0].headers.map(column => (
-              <th className='text-center' {...column.getHeaderProps()}>{column.render("Header")}</th>
+            {headerGroups[0].headers.map((column, colIndex) => (
+              <th 
+              key={colIndex}
+              className='text-center' {...column.getHeaderProps()}
+              >
+                {column.render("Header")}</th>
             ))}
           </tr>
         
       </thead>
       <tbody {...getTableBodyProps()}>
-        {rows.map(row => {
+        {rows.map((row, rowIndex) => {
           prepareRow(row);
           return (
-            <tr  {...row.getRowProps()}>
-              {row.cells.map(cell => {
+            <tr key={rowIndex} {...row.getRowProps()}>
+              {row.cells.map((cell, cellIndex) => {
                 console.log("GI", cell)
-                return <td className='text-center' {...cell.getCellProps()}>{cell.render("Cell")}</td>
+                return <td key={cellIndex} className='text-center' {...cell.getCellProps()}>{cell.render("Cell")}</td>
               })}
             </tr>
           )
