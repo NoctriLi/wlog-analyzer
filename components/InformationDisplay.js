@@ -108,10 +108,10 @@ const InformationDisplay = ({ info, detailPressed, setDetailPressed }) => {
                     </thead>
                     <tbody>
 
-                    {info.ranking.map(d =>  (
+                    {info.ranking.map((d, index) =>  (
 
                         
-                        <tr>
+                        <tr key={index}>
                             <td scope="row">{d[0]}</td>
                             <td> {d[1].rank || 'N/A'}</td>
                             <td>{d[1].spec}</td>
