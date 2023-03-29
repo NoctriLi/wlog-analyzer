@@ -121,6 +121,11 @@ async function getCharDataPromise(rankingData, metric, charClass)
 {
   // The set of variables to be queried for on a character
 
+  if (!rankingData || !rankingData.server) {
+    console.error('Invalid rankingData object');
+    return;
+  }
+
   return await client.query({query: CQUERY, variables: {
     region: rankingData.server.region,
     server: rankingData.server.name,
