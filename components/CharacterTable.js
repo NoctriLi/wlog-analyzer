@@ -75,7 +75,7 @@ function CharacterTable({ data, onRowClick }) {
         Cell: row => `${getRankingAverage(row.row.original.ranking)}`
       }
     ],
-    [isButtonDisabled]
+    [isButtonDisabled, onRowClick]
   );
   
   
