@@ -1,4 +1,4 @@
-import { client } from "../apollo-client";
+import  client  from "../apollo-client";
 import { ApolloClient, InMemoryCache, useQuery, useLazyQuery, gql } from "@apollo/client";
 import { useTable } from 'react-table';
 import { useEffect, useState, useMemo } from "react";
