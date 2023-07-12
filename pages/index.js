@@ -43,7 +43,7 @@ const handleRowClick = (rowData) => {
     <div>
       <Head>
       <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>Create Next App</title>
+        <title>WL Recruitment Tool</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
