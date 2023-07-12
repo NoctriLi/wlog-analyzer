@@ -1,6 +1,5 @@
 import { useMemo, useState, useEffect } from 'react';
 import { useTable } from 'react-table';
-import styles from "../styles/Home.module.css";
 
 
 function getRankingAverage(ranking){
@@ -24,7 +23,6 @@ const average = Math.round((sum[0] / sum[1]) * 100 ) / 100;
 
 function CharacterTable({ data, onRowClick }) {
 
-  const [buttonDisabled, setButtonDisabled] = useState(false);
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
 
 
